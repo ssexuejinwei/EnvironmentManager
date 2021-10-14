@@ -8,7 +8,7 @@
         class="logo"
         :class="{ 'is-active': !collapse }"
       >
-        信息墙数据管理后台
+        洋山港环境数据管理后台
       </div>
       <el-menu
         class="menu"
@@ -20,33 +20,27 @@
         :collapse="collapse"
         :collapse-transition="false"
       >
-       <el-submenu index="1">
+      <el-menu-item index="/hotnodeInfo">环境数据管理</el-menu-item>
+      <!-- <el-submenu index="1">
           <template slot="title">
-            <!-- <i class="el-icon-location"></i> -->
-            <span>详情信息管理</span>
+            <span>环境数据管理</span>
           </template>
-          <el-menu-item index="/hotnodeInfo">热点新闻节点</el-menu-item>
+          <el-menu-item index="/hotnodeInfo">节点</el-menu-item>
           <el-menu-item index="/othernodeInfo">其他节点</el-menu-item>
-      </el-submenu>
-      <el-menu-item index="/tripleData">
+      </el-submenu> -->
+    <!--  <el-menu-item index="/tripleData">
           <span>三元组管理</span>
-      </el-menu-item>
+      </el-menu-item> -->
       </el-menu>
     </el-aside>
     <el-container style="background-color: #F5F7FA;">
       <el-header class="header">
-        <div
-          class="collapse-button"
-          :class="{ active: collapse }"
-          @click="toggleCollapse"
-        >
-          <i class="el-icon-s-fold" style="color: black;"/>
-        </div>
+        
         <div
           class="logo-2"
           :class="{ 'is-active': collapse }"
         >
-          信息墙数据管理后台
+          洋山港环境数据管理后台
         </div>
         <div class="right">
           <el-button type="text" @click="logout">

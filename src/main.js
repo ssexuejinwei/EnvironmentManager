@@ -14,7 +14,10 @@ import {VueEditor,Quill} from "vue2-editor";
 import ImageResize from "quill-image-resize-module";
 import { ImageDrop } from "quill-image-drop-module";
 import {prefixApiUrl} from "./constant";
+import JsonExcel from "vue-json-excel";
+
 Vue.use(VueEditor);
+Vue.component("downloadExcel", JsonExcel);
 // Vue.use(Quill);
 Quill.register("modules/imageDrop", ImageDrop);
 Quill.register("modules/imageResize", ImageResize);

@@ -1,13 +1,15 @@
 <template>
   <div>
+    
     <div v-if="displayType==0" class ='nodeInfolist'>
-      <page-header  style="background-color: #EBEEF5; border: none;"  title="热点新闻节点"/>
+      <page-header  style="background-color: #EBEEF5; border: none;"  title="环境数据管理"/>
       <el-page-header v-if="isSearch" @back="goBack" />
+      
       <el-container>
         <el-main>
           <el-row>
-           <el-col :span="16">
-             <div class = 'radio-group'>
+           <el-col :span="6">
+             <!-- <div class = 'radio-group'>
                <el-radio-group v-model="typeRadio" fill="#5f82ff">
                      <el-radio-button label="0">全部信息</el-radio-button>
                      <el-radio-button label="1">科创动态</el-radio-button>
@@ -18,9 +20,16 @@
                      <el-radio-button label="6">技术交流</el-radio-button>
                      <el-radio-button label="7">lab建设</el-radio-button>
                    </el-radio-group>
-             </div>
+             </div> -->
+             <el-date-picker
+                   v-model="value1"
+                   type="date"
+                   placeholder="选择日期">
+                 </el-date-picker>
+                
            </el-col> 
-           <el-col :span="8">
+           
+           <el-col :span="6" :offset="6">
                <div class = 'search'>
                <el-input v-model="search" @keyup.enter.native="handleSearch" placeholder="请输入内容" style="width: 390px;text-align:center;">
                    <el-button
@@ -31,6 +40,22 @@
                    />
                  </el-input>
                </div>
+             </el-col>
+             <el-col :span="1" :offset="4">
+               <download-excel
+               :data = "selectednodeInfos"
+               :fields = "json_fields"
+               worksheet = "My Worksheet"
+               type    = "xls"
+               name    = "洋山港数据.xls"
+               >
+                <el-button
+                  type="primary"                  
+                  size="medium"
+                  :disabled="selectednodeInfos.size==0?true:false"
+                >下载
+                </el-button>
+               </download-excel>
              </el-col>
          </el-row>
          <br>
@@ -49,23 +74,50 @@
               align="center"
             />
             <el-table-column
-              prop="name"
-              label="热点新闻节点名称"
+              prop="id"
+              label="id"
               align="center"
             />
             <el-table-column
-              prop="time"
-              label="热点新闻时间"
+              prop="SiteName"
+              label="报告来源"
               align="center"
             />
             <el-table-column
-              label="热点新闻类型"
+              prop="CODRtd"
+              label="COD"
               align="center"
-            >
-              <template slot-scope="scope">
-                <span>{{type[scope.row.type]}}</span>
-              </template>
-            </el-table-column>
+            />
+            <el-table-column
+              label="PH"
+              prop="PHRtd"
+              align="center"
+            />
+            <el-table-column
+              label="氨氮"
+              prop="氨氮Rtd"
+              align="center"
+            />
+            <el-table-column
+              label="总磷"
+              prop="总磷Rtd"
+              align="center"
+            />
+            <el-table-column
+              prop="总氮Rtd"
+              label="总氮"
+              align="center"
+            />
+            <el-table-column
+              prop="浊度Rtd"
+              label="浊度"
+              align="center"
+            />
+            <el-table-column
+              prop="ReportTime"
+              label="报告时间"
+              align="center"
+            />
             <!-- <el-table-column
               prop="importance"
               label="重要等级"
@@ -84,6 +136,7 @@
                 >
                   查看
                 </el-button>
+                
               </template>
             </el-table-column>
           </el-table>
@@ -105,7 +158,7 @@
       
     </div>
     <div v-if="displayType==1" class ='nodeInfoInfo'>
-      <nodeInfoEdit :nodeInfo='nodeInfo' @update="handleEditFinish" @back="backHome"></nodeInfoEdit>
+      <nodeInfoEdit :nodeInfo='nodeInfo' :index='editIndex' @update="handleEditFinish" @back="backHome"></nodeInfoEdit>
     </div>
     <div v-if="displayType==2">
       <nodeInfoAdd  @update="handleAddFinish" @back="backHome"></nodeInfoAdd>
@@ -119,13 +172,32 @@ import nodeInfoEdit from './nodeInfoEdit'
 import nodeInfoAdd from './nodeInfoAdd'
 import Axios from 'axios'
 import qs from 'querystring'
+import downloadexcel from "vue-json-excel";
 export default {
   components: {
     nodeInfoEdit,
-    nodeInfoAdd
+    nodeInfoAdd,
+    downloadexcel
   },
   data () {
     return {
+      json_fields:{
+        '噪声': "noise",
+        'PM2.5': "pm2.5",
+        'PM10': "pm10",
+        '二氧化硫': "so2",
+        '二氧磷氮': "npo2",
+        '臭氧': "o3",
+        '温湿度': "wenshidu",
+        'PH': "PHRtd",
+        'COD': "CODRtd",
+        '氨氮': "氨氮Rtd",
+        '总磷': "总磷Rtd",
+        '总氮': "总氮Rtd",
+        '浊度': "浊度Rtd",
+        '水消耗量': "water",
+        '电消耗量': "elec",
+      },
       displayType:0,//0首页，1 edit，2add，
       type:['','科创动态','文件通知','AI课堂','成长记录','社团空间','技术交流','lab建设'],
       typeRadio:'0',
@@ -133,7 +205,8 @@ export default {
       search:'',
       cur_page:1,
       total:12,
-      api:'/api/node',
+      api:'json/YangShan.ashx',
+      // api:'/api/node',
       apiGetAll:'/sys/data/nodePageList',
       api_search:'/api/search',
       api_del_node:'/sys/data/deleteNode',
@@ -151,31 +224,12 @@ export default {
       fileList:[],
       images:[],
       loading:true,
+      editIndex:1,
     }
   },
   watch: {
-    search(newValue,oladValue) {
-      if(newValue == '') {
-        this.isSearch = false
-      }
-    },
-    cur_page(newValue,oldValue) {
-      this.getData()
-    },
-    typeRadio(newValue, oldValue) {
-      this.getData()
-    },
-    displayType(newValue, oldValue) {
-      if(newValue == 0){
-        this.getData()
-      }
-    }
   },
   created () {
-    // console.log('pathsssss',window.location.pathname)
-    // if(window.location.pathname == '/') {
-      // window.location.pathname = '/hotnodeInfo'
-    // }
     this.getData()
   },
   methods: {
@@ -198,9 +252,7 @@ export default {
         this.getData()
       }
     },
-    handleChange(file, fileList) {
-      this.images.push(file)
-    },
+
     handleRemove(file, fileList) {
       this.images.forEach((value,index) =>{
           if(file.uid == value.uid){
@@ -214,18 +266,18 @@ export default {
       // console.log(this.$axios.default.baseURL+this.api)
       let params = 
         {
-          "size": 10,
-          "current": this.cur_page,
-          "search": this.isSearch?this.search:'',
-          "isNews": true,
-          "type": this.typeRadio==0?null:this.typeRadio
+          "action": 'RealTime',
         }
-      Axios.post(this.apiGetAll,params).then(res => {
+      Axios.get(this.api, {params: params}).then(res => {
         // console.log(response)
-        let data = res.data.result
-        // console.log(data)
-        this.total = data.total
-        this.nodeInfoTableData = data.records
+        let data = res.data.data
+        console.log(data)
+        this.total = data.size
+        data[0]= {
+          ...data[0],
+          id :0
+        }
+        this.nodeInfoTableData = data
         this.displayType = 0
       }).catch(e => {
           this.$message.error(`获取信息列表失败: ${e.message || '未知错误'}`)
@@ -234,16 +286,12 @@ export default {
 		},
     handleEditFinish (val) {
       // this.isEdit = false
-      if (val) {
-        //获取新数据
-        this.getData()
-        // this.displayType = 0
-      }
+	  this.displayType = val
     },
     handleAddFinish (val) {
       if (val) {
         //获取新数据
-        this.getData()
+        // this.getData()
         // this.displayType = 0
       }
     },
@@ -253,6 +301,7 @@ export default {
     handleEdit(index,row) {
       this.displayType = 1
       this.nodeInfo = this.nodeInfoTableData[index]
+      this.editIndex = index
       // console.log(index,row)
     },
     addnodeInfo() {
@@ -290,6 +339,9 @@ export default {
         })
     },
     handleSelect (val) {
+      console.log("00000")
+      console.log(val)
+      console.log("00000")
       this.selectednodeInfos = val
     },
     handleAvatarSuccess(res, file) {
