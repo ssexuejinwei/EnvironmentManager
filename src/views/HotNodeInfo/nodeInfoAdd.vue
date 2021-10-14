@@ -30,7 +30,7 @@
 			    label="PM2.5"
 			  >
 			    <el-input
-			      v-model="nodeInfo['pm2.5']"
+			      v-model="nodeInfo['pm25']"
 			      autocomplete="off"
 			    />
 			  </el-form-item>
@@ -198,7 +198,7 @@ export default {
 		"浊度Flag": "",
 		"浊度Time": "",
 		"noise":"",
-		"pm2.5":"",
+		"pm25":"",
 		"pm10":"",
 		"so2":"",
 		"npo2":"",
@@ -215,7 +215,7 @@ export default {
 	  },
     save () {
 	this.$alert('添加成功').then(()=>{
-		this.$emit('back',0)
+		this.$emit('update',this.nodeInfo)
 	})       
     },
     goBack() {

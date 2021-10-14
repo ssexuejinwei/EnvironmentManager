@@ -41,7 +41,7 @@ const actions = {
     return new Promise((resolve, reject)=>{resolve('200 OK');}).then(() => {
 	  // console.log('i am promise')
     let status = 202
-	  if (username == 'ssfz' && password == 'ssfz123') {
+	  if (username == 'admin' && password == 'password') {
 		  status = 201
 	  }
       cookies.set(statusKey,status)

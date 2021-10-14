@@ -31,14 +31,7 @@
            
            <el-col :span="6" :offset="6">
                <div class = 'search'>
-               <el-input v-model="search" @keyup.enter.native="handleSearch" placeholder="请输入内容" style="width: 390px;text-align:center;">
-                   <el-button
-                     slot="append"
-                     icon="el-icon-search"
-                     class="search"
-                     @click="handleSearch"
-                   />
-                 </el-input>
+               
                </div>
              </el-col>
              <el-col :span="1" :offset="4">
@@ -75,17 +68,42 @@
             />
             <el-table-column
               prop="id"
-              label="id"
+              label="ID"
               align="center"
             />
             <el-table-column
-              prop="SiteName"
-              label="报告来源"
+              prop="noise"
+              label="噪声"
               align="center"
             />
             <el-table-column
-              prop="CODRtd"
-              label="COD"
+              prop="pm25"
+              label="pm2.5"
+              align="center"
+            />
+            <el-table-column
+              prop="pm10"
+              label="pm10"
+              align="center"
+            />
+            <el-table-column
+              prop="so2"
+              label="二氧化硫"
+              align="center"
+            />
+            <el-table-column
+              prop="npo2"
+              label="二氧磷氮"
+              align="center"
+            />
+            <el-table-column
+              label="臭氧"
+              prop="o3"
+              align="center"
+            />
+            <el-table-column
+              label="温湿度"
+              prop="wenshidu"
               align="center"
             />
             <el-table-column
@@ -94,13 +112,23 @@
               align="center"
             />
             <el-table-column
-              label="氨氮"
-              prop="氨氮Rtd"
+              prop="CODRtd"
+              label="COD"
               align="center"
             />
             <el-table-column
-              label="总磷"
+              prop="浊度Rtd"
+              label="浊度"
+              align="center"
+            />
+            <el-table-column
+              prop="氨氮Rtd"
+              label="氨氮Rtd"
+              align="center"
+            />
+            <el-table-column
               prop="总磷Rtd"
+              label="总磷"
               align="center"
             />
             <el-table-column
@@ -111,6 +139,16 @@
             <el-table-column
               prop="浊度Rtd"
               label="浊度"
+              align="center"
+            />
+            <el-table-column
+              prop="water"
+              label="水消耗量"
+              align="center"
+            />
+            <el-table-column
+              prop="elec"
+              label="电消耗量"
               align="center"
             />
             <el-table-column
@@ -183,7 +221,7 @@ export default {
     return {
       json_fields:{
         '噪声': "noise",
-        'PM2.5': "pm2.5",
+        'PM2.5': "pm25",
         'PM10': "pm10",
         '二氧化硫': "so2",
         '二氧磷氮': "npo2",
@@ -215,7 +253,7 @@ export default {
       nodeInfo:{},
       isEdit: false,
       isAdd: false,
-      nodeInfoTableData:[],
+      // nodeInfoTableData:[],
       nodeInfoForm:{ext:{
         title:'',
         content:'',
@@ -223,14 +261,36 @@ export default {
       }},
       fileList:[],
       images:[],
-      loading:true,
+      loading:false,
       editIndex:1,
+      nodeInfoTableData:[
+        {
+            "id" : 1,
+          "SiteCode": "021YSGSZ320001",
+          "SiteName": "洋山港水站1号-自动化码头",
+          "CODRtd": "15.8655",
+          "PHRtd": "7.9990",
+          "氨氮Rtd": "0.1160",
+          "总磷Rtd": "1.2477",
+          "总氮Rtd": "17.5613",
+          "浊度Rtd": "2.700",
+          "noise":"30",
+          "pm25":"144",
+          "pm10":"11",
+          "so2":"1",
+          "npo2":"1",
+          "o3":"0.2",
+          "wenshidu":"40",
+          "water":"55",
+          "elec":"66",
+          "ReportTime": "2021/10/14"  }]
     }
   },
   watch: {
   },
   created () {
-    this.getData()
+    this.total = this.nodeInfoTableData.size
+    // this.getData()
   },
   methods: {
     addNode(){
@@ -284,11 +344,20 @@ export default {
           this.nodeInfoTableData = []
       }).finally(() => {this.loading = false})
 		},
-    handleEditFinish (val) {
+    handleEditFinish (obj) {
       // this.isEdit = false
-	  this.displayType = val
+    this.nodeInfoTableData[obj.index] = obj.val
+	  this.displayType = 0
     },
     handleAddFinish (val) {
+      console.log("===================")
+      console.log(this.nodeInfoTableData.length)
+      val = {
+        ...val,
+        id : this.nodeInfoTableData.length + 1
+      }
+      this.nodeInfoTableData.push(val)
+      this.displayType = 0
       if (val) {
         //获取新数据
         // this.getData()
@@ -317,31 +386,20 @@ export default {
         })
     },
     deletenodeInfo (nodeInfo) {
-      const array = []
-      array.push(nodeInfo.id)
-      return this.$axios.post(this.api_del_node, array)
+      console.log('---------')
+      console.log(nodeInfo.id)
+      this.nodeInfoTableData.splice(nodeInfo.id-1,1)
+      // return this.$axios.post(this.api_del_node, array)
     },
     deletenodeInfos () {
       this.$confirm('是否删除选中的节点', '提示', { type: 'warning' }).then(() => {
         Promise.all(this.selectednodeInfos.map(this.deletenodeInfo))
           .then((res) => {
-            if(res[0].data.errorCode == 0) {
-              this.$alert('删除成功', '成功', { type: 'success' }).then(()=>{
-                this.getData()
-              }), (e) => {
-                console.error(e)
-                this.$alert('删除失败', '错误', { type: 'error' })
-              }
-            } else{
-              this.$alert('删除失败', res.data.result)
-            } 
-          })
+              this.$alert('删除成功', '成功', { type: 'success' })
+        })
         })
     },
     handleSelect (val) {
-      console.log("00000")
-      console.log(val)
-      console.log("00000")
       this.selectednodeInfos = val
     },
     handleAvatarSuccess(res, file) {

@@ -30,7 +30,7 @@
             	    label="PM2.5"
             	  >
             	    <el-input
-            	      v-model="nodeInfo['pm2.5']"
+            	      v-model="nodeInfo['pm25']"
             	      autocomplete="off"
             	    />
             	  </el-form-item>
@@ -259,15 +259,6 @@ export default {
     console.log(this.index)
     this.nodeInfo = {
       ...this.nodeInfo,
-      "noise":"暂无",
-      "pm2.5":"暂无",
-      "pm10":"暂无",
-      "so2":"暂无",
-      "npo2":"暂无",
-      "o3":"暂无",
-      "wenshidu":"暂无",
-      "water":"暂无",
-      "elec":"暂无"
     }
   },
   methods: {
@@ -282,8 +273,8 @@ export default {
         'index':this.index,
         'showindex': 0 
       }
-      localStorage.setItem('obj', obj)
-      this.$emit('update', 0)
+      // localStorage.setItem('obj', obj)
+      this.$emit('update', obj)
         
     },
     goBack() {
