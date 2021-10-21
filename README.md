@@ -1,4 +1,4 @@
-# infowall-manager-vue
+# environment-manager-vue
 
 ## Project setup
 ```
